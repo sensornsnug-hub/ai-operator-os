@@ -41,7 +41,7 @@ async function completeWithOpenAI(input: AICompletionInput): Promise<AICompletio
 
 async function completeWithFallback(input: AICompletionInput): Promise<AICompletionOutput> {
   const system = input.messages.find((message) => message.role === "system")?.content ?? "";
-  const user = input.messages.findLast((message) => message.role === "user")?.content ?? "";
+  const user = [...input.messages].reverse().find((message) => message.role === "user")?.content ?? "";
 
   return {
     text: [
