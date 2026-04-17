@@ -1,34 +1,39 @@
 import { NextRequest, NextResponse } from "next/server";
-import { leads, demoWorkspace } from "@/lib/mock-data";
+import { supabase } from "@/lib/supabase";
 
-export async function GET(request: NextRequest) {
-  const workspaceId = request.nextUrl.searchParams.get("workspaceId") || demoWorkspace.id;
-  return NextResponse.json({
-    data: leads.filter((lead) => lead.workspaceId === workspaceId)
-  });
+export async function GET() {
+  const { data, error } = await supabase
+    .from("leads")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ data });
 }
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
 
-  const lead = {
-    id: `lead_${Date.now()}`,
-    workspaceId: body.workspaceId || demoWorkspace.id,
-    name: body.name || "Unnamed lead",
-    channel: body.channel || "site",
-    source: body.source || "API",
-    destination: body.destination || "General",
-    intent: body.intent || "Buy",
-    status: "new" as const,
-    phone: body.phone,
-    email: body.email,
-    language: body.language || demoWorkspace.defaultLocale,
-    valueEstimate: Number(body.valueEstimate || 0),
-    createdAt: new Date().toISOString(),
-    nextFollowUpAt: body.nextFollowUpAt
-  };
+  const { data, error } = await supabase
+    .from("leads")
+    .insert([
+      {
+        name: body.name || "Unnamed lead",
+        phone: body.phone || null,
+        email: body.email || null,
+        source: body.source || "site",
+        status: body.status || "new",
+        value_estimate: Number(body.valueEstimate || 0),
+      },
+    ])
+    .select();
 
-  leads.unshift(lead);
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
-  return NextResponse.json({ data: lead }, { status: 201 });
+  return NextResponse.json({ data }, { status: 201 });
 }
