@@ -11,6 +11,7 @@ export default function HomePage() {
   return (
     <main className="pb-16">
       <HeroSection />
+      <LeadForm />
       <FeaturesSection />
 
       <section className="py-8 md:py-12">
