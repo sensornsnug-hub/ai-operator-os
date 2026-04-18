@@ -1,5 +1,31 @@
 import { createSupabaseAdminClient } from "@/lib/supabase";
 
+type Lead = {
+  id: string;
+  name?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  source?: string | null;
+  status?: string | null;
+  value_estimate?: number | null;
+  created_at?: string | null;
+};
+
+function formatWhatsappLink(phone: string | null | undefined) {
+  const digits = String(phone || "").replace(/\D/g, "");
+  return `https://wa.me/55${digits}`;
+}
+
+function formatCurrency(value: number | null | undefined) {
+  if (!value) return "-";
+  return `R$ ${value}`;
+}
+
+function formatDate(value: string | null | undefined) {
+  if (!value) return "-";
+  return new Date(value).toLocaleString("pt-BR");
+}
+
 export default async function LeadsPage() {
   const supabase = createSupabaseAdminClient();
 
@@ -45,39 +71,48 @@ export default async function LeadsPage() {
               <tbody>
                 {!leads || leads.length === 0 ? (
                   <tr>
-                    <td
-                      colSpan={8}
-                      className="px-4 py-6 text-center text-slate-400"
-                    >
+                    <td colSpan={8} className="px-4 py-6 text-center text-slate-400">
                       Nenhum lead encontrado.
                     </td>
                   </tr>
                 ) : (
-                  leads.map((lead) => (
+                  (leads as Lead[]).map((lead) => (
                     <tr key={lead.id} className="border-t border-white/10">
                       <td className="px-4 py-3">{lead.name || "-"}</td>
                       <td className="px-4 py-3">{lead.phone || "-"}</td>
                       <td className="px-4 py-3">{lead.email || "-"}</td>
                       <td className="px-4 py-3">{lead.source || "-"}</td>
-                      <td className="px-4 py-3">{lead.status || "-"}</td>
-
                       <td className="px-4 py-3">
-                        {lead.value_estimate
-                          ? `R$ ${lead.value_estimate}`
-                          : "-"}
-                      </td>
+                        <form action={`/api/leads`} method="post">
+                          <select
+                            defaultValue={lead.status || "new"}
+                            className="rounded-lg border border-white/10 bg-slate-900 px-3 py-2 text-white"
+                            onChange={async (e) => {
+                              await fetch("/api/leads", {
+                                method: "PATCH",
+                                headers: {
+                                  "Content-Type": "application/json"
+                                },
+                                body: JSON.stringify({
+                                  id: lead.id,
+                                  status: e.target.value
+                                })
+                              });
 
-                      <td className="px-4 py-3">
-                        {lead.created_at
-                          ? new Date(lead.created_at).toLocaleString("pt-BR")
-                          : "-"}
+                              window.location.reload();
+                            }}
+                          >
+                            <option value="new">Novo</option>
+                            <option value="contacted">Contatado</option>
+                            <option value="closed">Fechado</option>
+                          </select>
+                        </form>
                       </td>
-
+                      <td className="px-4 py-3">{formatCurrency(lead.value_estimate)}</td>
+                      <td className="px-4 py-3">{formatDate(lead.created_at)}</td>
                       <td className="px-4 py-3">
                         <a
-                          href={`https://wa.me/55${String(
-                            lead.phone || ""
-                          ).replace(/\D/g, "")}`}
+                          href={formatWhatsappLink(lead.phone)}
                           target="_blank"
                           rel="noreferrer"
                           className="text-green-400 underline"
