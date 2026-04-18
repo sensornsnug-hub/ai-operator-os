@@ -1,4 +1,5 @@
 import { createSupabaseAdminClient } from "@/lib/supabase";
+import { LeadStatusSelect } from "@/components/LeadStatusSelect";
 
 type Lead = {
   id: string;
@@ -83,30 +84,10 @@ export default async function LeadsPage() {
                       <td className="px-4 py-3">{lead.email || "-"}</td>
                       <td className="px-4 py-3">{lead.source || "-"}</td>
                       <td className="px-4 py-3">
-                        <form action={`/api/leads`} method="post">
-                          <select
-                            defaultValue={lead.status || "new"}
-                            className="rounded-lg border border-white/10 bg-slate-900 px-3 py-2 text-white"
-                            onChange={async (e) => {
-                              await fetch("/api/leads", {
-                                method: "PATCH",
-                                headers: {
-                                  "Content-Type": "application/json"
-                                },
-                                body: JSON.stringify({
-                                  id: lead.id,
-                                  status: e.target.value
-                                })
-                              });
-
-                              window.location.reload();
-                            }}
-                          >
-                            <option value="new">Novo</option>
-                            <option value="contacted">Contatado</option>
-                            <option value="closed">Fechado</option>
-                          </select>
-                        </form>
+                        <LeadStatusSelect
+                          id={lead.id}
+                          status={lead.status || "new"}
+                        />
                       </td>
                       <td className="px-4 py-3">{formatCurrency(lead.value_estimate)}</td>
                       <td className="px-4 py-3">{formatDate(lead.created_at)}</td>
