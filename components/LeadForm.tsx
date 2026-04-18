@@ -129,7 +129,7 @@ export function LeadForm() {
               disabled={loading}
               className="mt-2 h-14 rounded-2xl bg-brand-500 px-6 text-base font-medium text-white transition hover:bg-brand-400 disabled:cursor-not-allowed disabled:opacity-70"
             >
-              {loading ? "Enviando..." : "Quero atendimento"}
+              {loading ? "Enviando..." : "Quero ativar agora"}
             </button>
 
             {feedback && (
