@@ -91,13 +91,12 @@ export function LeadForm() {
             </div>
 
             <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white md:text-4xl">
-              Receba atendimento e veja como esse sistema pode operar no seu negócio
-            </h2>
+           Ative um operador de vendas com IA no seu negócio
+           </h2>
 
-            <p className="mt-3 text-sm text-slate-300 md:text-base">
-              Preencha seus dados e entraremos em contato para apresentar a estrutura,
-              ativação e possibilidades de monetização.
-            </p>
+           <p className="mt-3 text-sm text-slate-300 md:text-base">
+          Captura, responde e faz follow-up automático com seus clientes — 24h por dia.
+           </p>
           </div>
 
           <form onSubmit={handleSubmit} className="grid gap-4">
