@@ -72,7 +72,10 @@ export default async function LeadsPage() {
               <tbody>
                 {!leads || leads.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-4 py-6 text-center text-slate-400">
+                    <td
+                      colSpan={8}
+                      className="px-4 py-6 text-center text-slate-400"
+                    >
                       Nenhum lead encontrado.
                     </td>
                   </tr>
@@ -83,23 +86,48 @@ export default async function LeadsPage() {
                       <td className="px-4 py-3">{lead.phone || "-"}</td>
                       <td className="px-4 py-3">{lead.email || "-"}</td>
                       <td className="px-4 py-3">{lead.source || "-"}</td>
+
                       <td className="px-4 py-3">
                         <LeadStatusSelect
                           id={lead.id}
                           status={lead.status || "new"}
                         />
                       </td>
-                      <td className="px-4 py-3">{formatCurrency(lead.value_estimate)}</td>
-                      <td className="px-4 py-3">{formatDate(lead.created_at)}</td>
+
                       <td className="px-4 py-3">
-                        <a
-                          href={formatWhatsappLink(lead.phone)}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-green-400 underline"
-                        >
-                          WhatsApp
-                        </a>
+                        {formatCurrency(lead.value_estimate)}
+                      </td>
+
+                      <td className="px-4 py-3">
+                        {formatDate(lead.created_at)}
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <div className="flex flex-col gap-2">
+                          <a
+                            href={formatWhatsappLink(lead.phone)}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-green-400 underline"
+                          >
+                            WhatsApp
+                          </a>
+
+                          <form action="/api/followup" method="POST">
+                            <input type="hidden" name="lead_id" value={lead.id} />
+                            <input
+                              type="hidden"
+                              name="phone"
+                              value={lead.phone || ""}
+                            />
+                            <button
+                              type="submit"
+                              className="text-blue-400 underline text-left"
+                            >
+                              Follow-up
+                            </button>
+                          </form>
+                        </div>
                       </td>
                     </tr>
                   ))
