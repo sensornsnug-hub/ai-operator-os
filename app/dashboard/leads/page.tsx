@@ -114,7 +114,11 @@ export default async function LeadsPage() {
                           </a>
 
                           <form action="/api/followup" method="POST">
-                            <input type="hidden" name="lead_id" value={lead.id} />
+                            <input
+                              type="hidden"
+                              name="lead_id"
+                              value={lead.id}
+                            />
                             <input
                               type="hidden"
                               name="phone"
