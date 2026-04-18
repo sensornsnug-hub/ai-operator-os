@@ -10,7 +10,10 @@ export async function POST(req: NextRequest) {
     const phone = String(formData.get("phone") || "");
 
     if (!lead_id || !phone) {
-      return NextResponse.redirect(new URL("/dashboard/leads?error=missing-data", req.url));
+      return NextResponse.redirect(
+        new URL("/dashboard/leads?error=missing-data", req.url),
+        303
+      );
     }
 
     const { error } = await supabase.from("follow_ups").insert([
@@ -25,12 +28,21 @@ export async function POST(req: NextRequest) {
 
     if (error) {
       console.error("Erro ao salvar follow-up:", error.message);
-      return NextResponse.redirect(new URL("/dashboard/leads?error=save-failed", req.url));
+      return NextResponse.redirect(
+        new URL("/dashboard/leads?error=save-failed", req.url),
+        303
+      );
     }
 
-    return NextResponse.redirect(new URL("/dashboard/leads?success=followup-created", req.url));
+    return NextResponse.redirect(
+      new URL("/dashboard/leads?success=followup-created", req.url),
+      303
+    );
   } catch (error) {
     console.error("Erro inesperado no follow-up:", error);
-    return NextResponse.redirect(new URL("/dashboard/leads?error=unexpected", req.url));
+    return NextResponse.redirect(
+      new URL("/dashboard/leads?error=unexpected", req.url),
+      303
+    );
   }
 }
