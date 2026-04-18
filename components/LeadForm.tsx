@@ -131,6 +131,9 @@ export function LeadForm() {
             >
               {loading ? "Enviando..." : "Quero ativar agora"}
             </button>
+            <p className="mt-2 text-center text-xs text-slate-400">
+            Sem spam. Resposta em até 5 minutos.
+            </p>
 
             {feedback && (
               <div
