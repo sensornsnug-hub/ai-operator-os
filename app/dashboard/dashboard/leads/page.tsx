@@ -38,12 +38,17 @@ export default async function LeadsPage() {
                   <th className="px-4 py-3">Status</th>
                   <th className="px-4 py-3">Valor</th>
                   <th className="px-4 py-3">Criado em</th>
+                  <th className="px-4 py-3">Ações</th>
                 </tr>
               </thead>
+
               <tbody>
                 {!leads || leads.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-4 py-6 text-center text-slate-400">
+                    <td
+                      colSpan={8}
+                      className="px-4 py-6 text-center text-slate-400"
+                    >
                       Nenhum lead encontrado.
                     </td>
                   </tr>
@@ -55,13 +60,30 @@ export default async function LeadsPage() {
                       <td className="px-4 py-3">{lead.email || "-"}</td>
                       <td className="px-4 py-3">{lead.source || "-"}</td>
                       <td className="px-4 py-3">{lead.status || "-"}</td>
+
                       <td className="px-4 py-3">
-                        {lead.value_estimate ? `R$ ${lead.value_estimate}` : "-"}
+                        {lead.value_estimate
+                          ? `R$ ${lead.value_estimate}`
+                          : "-"}
                       </td>
+
                       <td className="px-4 py-3">
                         {lead.created_at
                           ? new Date(lead.created_at).toLocaleString("pt-BR")
                           : "-"}
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <a
+                          href={`https://wa.me/55${String(
+                            lead.phone || ""
+                          ).replace(/\D/g, "")}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-green-400 underline"
+                        >
+                          WhatsApp
+                        </a>
                       </td>
                     </tr>
                   ))
