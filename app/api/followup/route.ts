@@ -10,27 +10,39 @@ export async function POST(req: NextRequest) {
     const phone = String(formData.get("phone") || "");
 
     if (!lead_id || !phone) {
-      return NextResponse.redirect(new URL("/dashboard/leads?error=missing-data", req.url));
+      return NextResponse.json(
+        { error: "lead_id e phone são obrigatórios." },
+        { status: 400 }
+      );
     }
 
-    const { error } = await supabase.from("follow_ups").insert([
-      {
-        lead_id,
-        phone,
-        message: "Olá! Estou entrando em contato para dar continuidade.",
-        send_at: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
-        sent: false
-      }
-    ]);
+    const { data, error } = await supabase
+      .from("follow_ups")
+      .insert([
+        {
+          lead_id,
+          phone,
+          message: "Olá! Estou entrando em contato para dar continuidade.",
+          send_at: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+          sent: false
+        }
+      ])
+      .select();
 
     if (error) {
-      console.error("Erro ao salvar follow-up:", error.message);
-      return NextResponse.redirect(new URL("/dashboard/leads?error=save-failed", req.url));
+      return NextResponse.json(
+        { error: error.message, details: error },
+        { status: 500 }
+      );
     }
 
-    return NextResponse.redirect(new URL("/dashboard/leads?success=followup-created", req.url));
+    return NextResponse.redirect(new URL("/dashboard/leads", req.url), 302);
   } catch (error) {
-    console.error("Erro inesperado no follow-up:", error);
-    return NextResponse.redirect(new URL("/dashboard/leads?error=unexpected", req.url));
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : "Unexpected server error."
+      },
+      { status: 500 }
+    );
   }
 }
