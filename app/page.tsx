@@ -1,3 +1,4 @@
+import { LeadForm } from "@/components/LeadForm";
 import Link from "next/link";
 import { HeroSection } from "@/components/sections/hero";
 import { FeaturesSection } from "@/components/sections/features";
