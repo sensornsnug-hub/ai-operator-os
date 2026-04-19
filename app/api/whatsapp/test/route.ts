@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // COLOQUE AQUI O NÚMERO QUE ESTÁ AUTORIZADO NA META
+    // COLOQUE AQUI O NÚMERO EXATO QUE ESTÁ AUTORIZADO NA META
     const to = "5575992212864";
 
     const response = await fetch(
