@@ -6,10 +6,10 @@ export default async function WhatsAppSettingsPage() {
   const workspace_id = "ws_demo_001";
 
   const { data: integration } = await supabase
-  .from("whatsapp_integrations")
-  .select("*")
-  .eq("workspace_id", workspace_id)
-  .maybeSingle();
+    .from("whatsapp_integrations")
+    .select("*")
+    .eq("workspace_id", workspace_id)
+    .maybeSingle();
 
   return (
     <main className="min-h-screen bg-slate-950 p-6 text-white">
@@ -46,6 +46,7 @@ export default async function WhatsAppSettingsPage() {
               <label className="text-sm text-slate-400">Nome da empresa</label>
               <input
                 name="company_name"
+                defaultValue={integration?.company_name || ""}
                 className="mt-1 w-full rounded border border-white/10 bg-slate-800 p-2"
                 required
               />
@@ -57,7 +58,8 @@ export default async function WhatsAppSettingsPage() {
               </label>
               <input
                 name="business_phone"
-                placeholder="75999999999"
+                defaultValue={integration?.business_phone || ""}
+                placeholder="75992212864"
                 className="mt-1 w-full rounded border border-white/10 bg-slate-800 p-2"
                 required
               />
@@ -69,7 +71,9 @@ export default async function WhatsAppSettingsPage() {
               </label>
               <input
                 name="phone_number_id"
+                defaultValue={integration?.phone_number_id || ""}
                 className="mt-1 w-full rounded border border-white/10 bg-slate-800 p-2"
+                required
               />
             </div>
 
@@ -79,7 +83,9 @@ export default async function WhatsAppSettingsPage() {
               </label>
               <input
                 name="access_token"
+                defaultValue={integration?.access_token || ""}
                 className="mt-1 w-full rounded border border-white/10 bg-slate-800 p-2"
+                required
               />
             </div>
 
@@ -94,7 +100,6 @@ export default async function WhatsAppSettingsPage() {
           {integration?.is_connected && (
             <form action="/api/whatsapp/test" method="POST" className="pt-4">
               <input type="hidden" name="workspace_id" value={workspace_id} />
-
               <button type="submit" className="text-blue-400 underline">
                 Enviar mensagem de teste
               </button>
