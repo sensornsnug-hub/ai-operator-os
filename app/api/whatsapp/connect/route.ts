@@ -20,6 +20,14 @@ export async function POST(req: NextRequest) {
     ).trim();
     const access_token = String(formData.get("access_token") || "").trim();
 
+    console.log("BODY RECEBIDO /api/whatsapp/connect:", {
+      workspace_id,
+      company_name,
+      business_phone,
+      phone_number_id,
+      access_token_preview: access_token ? `${access_token.slice(0, 12)}...` : "",
+    });
+
     if (!workspace_id) {
       return NextResponse.json(
         { error: "workspace_id é obrigatório" },
@@ -58,14 +66,39 @@ export async function POST(req: NextRequest) {
       updated_at: new Date().toISOString(),
     };
 
-    const { error } = await supabase
+    console.log("PAYLOAD UPSERT whatsapp_integrations:", {
+      ...payload,
+      access_token: `${access_token.slice(0, 12)}...`,
+    });
+
+    const { data, error } = await supabase
       .from("whatsapp_integrations")
       .upsert(payload, {
         onConflict: "workspace_id",
-      });
+      })
+      .select()
+      .single();
+
+    console.log("RESULTADO SAVE whatsapp_integrations:", {
+      data: data
+        ? {
+            ...data,
+            access_token_preview: data.access_token
+              ? `${String(data.access_token).slice(0, 12)}...`
+              : "",
+          }
+        : null,
+      error,
+    });
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json(
+        {
+          error: error.message,
+          details: error,
+        },
+        { status: 500 }
+      );
     }
 
     return NextResponse.redirect(
@@ -73,6 +106,8 @@ export async function POST(req: NextRequest) {
       303
     );
   } catch (error) {
+    console.error("ERRO GERAL /api/whatsapp/connect:", error);
+
     return NextResponse.json(
       {
         error:
