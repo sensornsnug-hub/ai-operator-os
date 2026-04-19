@@ -6,10 +6,10 @@ export default async function WhatsAppSettingsPage() {
   const workspace_id = "ws_demo_001";
 
   const { data: integration } = await supabase
-    .from("whatsapp_integrations")
-    .select("*")
-    .eq("workspace_id", workspace_id)
-    .single();
+  .from("whatsapp_integrations")
+  .select("*")
+  .eq("workspace_id", workspace_id)
+  .maybeSingle();
 
   return (
     <main className="min-h-screen bg-slate-950 p-6 text-white">
