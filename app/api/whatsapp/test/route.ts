@@ -6,7 +6,7 @@ export async function POST(req: NextRequest) {
     const supabase = createSupabaseAdminClient();
     const formData = await req.formData();
 
-    const workspace_id = String(formData.get("workspace_id") || "");
+    const workspace_id = String(formData.get("workspace_id") || "").trim();
 
     const { data: integration, error } = await supabase
       .from("whatsapp_integrations")
@@ -21,9 +21,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // NÚMERO DESTINATÁRIO DE TESTE
-    // COLOQUE AQUI O NÚMERO EXATO QUE ESTÁ LIBERADO NA META
-    // Formato: 55 + DDD + número, sem +, sem espaço, sem hífen
     const to = "5575992212864";
 
     const response = await fetch(
@@ -45,13 +42,26 @@ export async function POST(req: NextRequest) {
             },
           },
         }),
+        cache: "no-store",
       }
     );
 
     const data = await response.json();
 
     if (!response.ok) {
-      return NextResponse.json({ error: data }, { status: 500 });
+      return NextResponse.json(
+        {
+          error: data,
+          debug: {
+            workspace_id,
+            phone_number_id: integration.phone_number_id,
+            business_phone: integration.business_phone,
+            token_preview: `${String(integration.access_token).slice(0, 12)}...`,
+            to,
+          },
+        },
+        { status: 500 }
+      );
     }
 
     return NextResponse.redirect(
