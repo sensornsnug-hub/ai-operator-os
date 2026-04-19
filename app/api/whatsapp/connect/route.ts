@@ -19,6 +19,7 @@ export async function POST(req: NextRequest) {
       formData.get("phone_number_id") || ""
     ).trim();
     const access_token = String(formData.get("access_token") || "").trim();
+    const remove_token = String(formData.get("remove_token") || "").trim() === "true";
 
     console.log("BODY RECEBIDO /api/whatsapp/connect:", {
       workspace_id,
@@ -26,6 +27,7 @@ export async function POST(req: NextRequest) {
       business_phone,
       phone_number_id,
       access_token_preview: access_token ? `${access_token.slice(0, 12)}...` : "",
+      remove_token,
     });
 
     if (!workspace_id) {
@@ -49,7 +51,50 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!access_token) {
+    const { data: existingIntegration, error: existingError } = await supabase
+      .from("whatsapp_integrations")
+      .select("*")
+      .eq("workspace_id", workspace_id)
+      .maybeSingle();
+
+    if (existingError) {
+      return NextResponse.json(
+        { error: existingError.message },
+        { status: 500 }
+      );
+    }
+
+    if (remove_token) {
+      const { error } = await supabase
+        .from("whatsapp_integrations")
+        .upsert(
+          {
+            workspace_id,
+            company_name,
+            business_phone,
+            phone_number_id,
+            access_token: null,
+            is_connected: false,
+            updated_at: new Date().toISOString(),
+          },
+          {
+            onConflict: "workspace_id",
+          }
+        );
+
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+
+      return NextResponse.redirect(
+        new URL("/dashboard/settings/whatsapp?success=connected", req.url),
+        303
+      );
+    }
+
+    const final_access_token = access_token || existingIntegration?.access_token || "";
+
+    if (!final_access_token) {
       return NextResponse.json(
         { error: "access_token é obrigatório" },
         { status: 400 }
@@ -61,14 +106,14 @@ export async function POST(req: NextRequest) {
       company_name,
       business_phone,
       phone_number_id,
-      access_token,
+      access_token: final_access_token,
       is_connected: true,
       updated_at: new Date().toISOString(),
     };
 
     console.log("PAYLOAD UPSERT whatsapp_integrations:", {
       ...payload,
-      access_token: `${access_token.slice(0, 12)}...`,
+      access_token: `${final_access_token.slice(0, 12)}...`,
     });
 
     const { data, error } = await supabase
