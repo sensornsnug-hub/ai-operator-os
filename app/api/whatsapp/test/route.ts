@@ -15,10 +15,14 @@ export async function POST(req: NextRequest) {
       .maybeSingle();
 
     if (error || !integration) {
-      return NextResponse.json({ error: "Integração não encontrada." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Integração não encontrada." },
+        { status: 400 }
+      );
     }
 
-    const digits = String(integration.business_phone || "").replace(/\D/g, "");
+    // COLOQUE AQUI O NÚMERO QUE ESTÁ AUTORIZADO NA META
+    const to = "5575992212864";
 
     const response = await fetch(
       `https://graph.facebook.com/v25.0/${integration.phone_number_id}/messages`,
@@ -30,10 +34,13 @@ export async function POST(req: NextRequest) {
         },
         body: JSON.stringify({
           messaging_product: "whatsapp",
-          to: digits,
-          type: "text",
-          text: {
-            body: "Teste de conexão do AI Workforce OS 🚀",
+          to,
+          type: "template",
+          template: {
+            name: "hello_world",
+            language: {
+              code: "en_US",
+            },
           },
         }),
       }
@@ -51,7 +58,9 @@ export async function POST(req: NextRequest) {
     );
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Erro inesperado." },
+      {
+        error: error instanceof Error ? error.message : "Erro inesperado.",
+      },
       { status: 500 }
     );
   }
