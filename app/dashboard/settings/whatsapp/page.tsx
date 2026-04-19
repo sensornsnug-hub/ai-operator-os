@@ -14,9 +14,9 @@ export default async function WhatsAppSettingsPage() {
   return (
     <main className="min-h-screen bg-slate-950 p-6 text-white">
       <div className="mx-auto max-w-3xl">
-        <h1 className="mb-6 text-2xl font-semibold">
-          Configurações do WhatsApp
-        </h1>
+       <h1 className="mb-6 text-2xl font-semibold">
+  Configurações do WhatsApp TESTE 123
+</h1>
 
         <div className="space-y-6 rounded-xl border border-white/10 bg-white/5 p-6">
           <div>
