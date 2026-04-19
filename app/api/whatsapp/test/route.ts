@@ -21,7 +21,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // COLOQUE AQUI O NÚMERO EXATO QUE ESTÁ AUTORIZADO NA META
+    // NÚMERO DESTINATÁRIO DE TESTE
+    // COLOQUE AQUI O NÚMERO EXATO QUE ESTÁ LIBERADO NA META
+    // Formato: 55 + DDD + número, sem +, sem espaço, sem hífen
     const to = "5575992212864";
 
     const response = await fetch(
