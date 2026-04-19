@@ -1,7 +1,14 @@
 import { createSupabaseAdminClient } from "@/lib/supabase";
 
-export default async function WhatsAppSettingsPage() {
+export default async function WhatsAppSettingsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{
+    success?: string;
+  }>;
+}) {
   const supabase = createSupabaseAdminClient();
+  const params = searchParams ? await searchParams : undefined;
 
   const workspace_id = "ws_demo_001";
 
@@ -11,14 +18,26 @@ export default async function WhatsAppSettingsPage() {
     .eq("workspace_id", workspace_id)
     .maybeSingle();
 
+  const hasSavedToken = Boolean(integration?.access_token);
+
   return (
     <main className="min-h-screen bg-slate-950 p-6 text-white">
       <div className="mx-auto max-w-3xl">
-       <h1 className="text-2xl font-semibold mb-6">
-  CONFIG WHATSAPP ARQUIVO CERTO 999
-</h1>
+        <h1 className="mb-6 text-2xl font-semibold">Configuração do WhatsApp</h1>
 
         <div className="space-y-6 rounded-xl border border-white/10 bg-white/5 p-6">
+          {params?.success === "connected" && (
+            <div className="rounded-lg border border-green-500/30 bg-green-500/10 p-3 text-sm text-green-300">
+              Integração salva com sucesso.
+            </div>
+          )}
+
+          {params?.success === "test-sent" && (
+            <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-3 text-sm text-blue-300">
+              Mensagem de teste enviada com sucesso.
+            </div>
+          )}
+
           <div>
             <p className="text-sm text-slate-400">Status</p>
             <p className="text-lg">
@@ -82,11 +101,21 @@ export default async function WhatsAppSettingsPage() {
                 Access Token (Meta)
               </label>
               <input
+                type="password"
                 name="access_token"
-                defaultValue={integration?.access_token || ""}
+                defaultValue=""
+                placeholder={
+                  hasSavedToken
+                    ? "Token já salvo. Cole outro apenas se quiser substituir."
+                    : "Cole o Access Token da Meta"
+                }
                 className="mt-1 w-full rounded border border-white/10 bg-slate-800 p-2"
-                required
               />
+              <p className="mt-1 text-xs text-slate-500">
+                {hasSavedToken
+                  ? "Já existe um token salvo no banco. Deixe em branco para manter o atual."
+                  : "Cole aqui o token da Meta para conectar o número."}
+              </p>
             </div>
 
             <button
