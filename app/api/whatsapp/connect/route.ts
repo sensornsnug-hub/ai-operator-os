@@ -1,20 +1,49 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase";
 
+function normalizePhone(value: string) {
+  return value.replace(/\D/g, "");
+}
+
 export async function POST(req: NextRequest) {
   try {
     const supabase = createSupabaseAdminClient();
     const formData = await req.formData();
 
-    const workspace_id = String(formData.get("workspace_id") || "");
-    const company_name = String(formData.get("company_name") || "");
-    const business_phone = String(formData.get("business_phone") || "");
-    const phone_number_id = String(formData.get("phone_number_id") || "");
-    const access_token = String(formData.get("access_token") || "");
+    const workspace_id = String(formData.get("workspace_id") || "").trim();
+    const company_name = String(formData.get("company_name") || "").trim();
+    const business_phone = normalizePhone(
+      String(formData.get("business_phone") || "")
+    );
+    const phone_number_id = String(
+      formData.get("phone_number_id") || ""
+    ).trim();
+    const access_token = String(formData.get("access_token") || "").trim();
 
     if (!workspace_id) {
       return NextResponse.json(
         { error: "workspace_id é obrigatório" },
+        { status: 400 }
+      );
+    }
+
+    if (!business_phone) {
+      return NextResponse.json(
+        { error: "business_phone é obrigatório" },
+        { status: 400 }
+      );
+    }
+
+    if (!phone_number_id) {
+      return NextResponse.json(
+        { error: "phone_number_id é obrigatório" },
+        { status: 400 }
+      );
+    }
+
+    if (!access_token) {
+      return NextResponse.json(
+        { error: "access_token é obrigatório" },
         { status: 400 }
       );
     }
@@ -46,7 +75,8 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : "Unexpected server error.",
+        error:
+          error instanceof Error ? error.message : "Unexpected server error.",
       },
       { status: 500 }
     );
