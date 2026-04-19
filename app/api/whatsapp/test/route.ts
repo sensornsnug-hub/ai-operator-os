@@ -8,20 +8,97 @@ export async function POST(req: NextRequest) {
 
     const workspace_id = String(formData.get("workspace_id") || "").trim();
 
+    console.log("BODY RECEBIDO /api/whatsapp/test:", {
+      workspace_id,
+    });
+
+    if (!workspace_id) {
+      return NextResponse.json(
+        { error: "workspace_id é obrigatório." },
+        { status: 400 }
+      );
+    }
+
+    console.log("BUSCANDO INTEGRAÇÃO DO WORKSPACE:", workspace_id);
+
     const { data: integration, error } = await supabase
       .from("whatsapp_integrations")
       .select("*")
       .eq("workspace_id", workspace_id)
       .maybeSingle();
 
-    if (error || !integration) {
+    console.log("INTEGRAÇÃO LIDA /api/whatsapp/test:", {
+      integration: integration
+        ? {
+            ...integration,
+            access_token_preview: integration.access_token
+              ? `${String(integration.access_token).slice(0, 12)}...`
+              : "",
+          }
+        : null,
+      error,
+    });
+
+    if (error) {
       return NextResponse.json(
-        { error: "Integração não encontrada." },
+        {
+          error: "Erro ao buscar integração no banco.",
+          details: error,
+          debug: {
+            workspace_id,
+          },
+        },
+        { status: 500 }
+      );
+    }
+
+    if (!integration) {
+      return NextResponse.json(
+        {
+          error: "Integração não encontrada.",
+          debug: {
+            workspace_id,
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+    if (!integration.phone_number_id) {
+      return NextResponse.json(
+        {
+          error: "phone_number_id não encontrado na integração.",
+          debug: {
+            workspace_id,
+            integration,
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+    if (!integration.access_token) {
+      return NextResponse.json(
+        {
+          error: "access_token não encontrado na integração.",
+          debug: {
+            workspace_id,
+            integration,
+          },
+        },
         { status: 400 }
       );
     }
 
     const to = "5575992212864";
+
+    console.log("ENVIANDO TESTE WHATSAPP:", {
+      workspace_id,
+      phone_number_id: integration.phone_number_id,
+      business_phone: integration.business_phone,
+      access_token_preview: `${String(integration.access_token).slice(0, 12)}...`,
+      to,
+    });
 
     const response = await fetch(
       `https://graph.facebook.com/v25.0/${integration.phone_number_id}/messages`,
@@ -48,6 +125,12 @@ export async function POST(req: NextRequest) {
 
     const data = await response.json();
 
+    console.log("RESPOSTA META /api/whatsapp/test:", {
+      ok: response.ok,
+      status: response.status,
+      data,
+    });
+
     if (!response.ok) {
       return NextResponse.json(
         {
@@ -69,6 +152,8 @@ export async function POST(req: NextRequest) {
       303
     );
   } catch (error) {
+    console.error("ERRO GERAL /api/whatsapp/test:", error);
+
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : "Erro inesperado.",
