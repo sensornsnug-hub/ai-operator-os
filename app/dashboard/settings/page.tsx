@@ -1,55 +1,158 @@
-import { Topbar } from "@/components/ui/topbar";
-import { demoWorkspace } from "@/lib/mock-data";
+import { createSupabaseAdminClient } from "@/lib/supabase";
 
-export default function SettingsPage() {
+export default async function WhatsAppSettingsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{
+    success?: string;
+  }>;
+}) {
+  const supabase = createSupabaseAdminClient();
+  const params = searchParams ? await searchParams : undefined;
+
+  const workspace_id = "ws_demo_001";
+
+  const { data: integration } = await supabase
+    .from("whatsapp_integrations")
+    .select("*")
+    .eq("workspace_id", workspace_id)
+    .maybeSingle();
+
+  const hasSavedToken = Boolean(integration?.access_token);
+
   return (
-    <div className="py-4">
-      <Topbar
-        title="Workspace settings"
-        subtitle="Configure company identity, niche, language stack and dynamic destination/intent labels per workspace."
-      />
-      <div className="grid gap-4 lg:grid-cols-2">
-        <div className="card glow p-6">
-          <h2 className="text-lg font-semibold text-white">Company identity</h2>
-          <label className="mb-2 mt-5 block text-sm text-slate-300">Workspace name</label>
-          <input className="input" defaultValue={demoWorkspace.name} />
-          <label className="mb-2 mt-4 block text-sm text-slate-300">Company name</label>
-          <input className="input" defaultValue={demoWorkspace.companyName} />
-          <label className="mb-2 mt-4 block text-sm text-slate-300">Support email</label>
-          <input className="input" defaultValue={demoWorkspace.supportEmail} />
-          <label className="mb-2 mt-4 block text-sm text-slate-300">Niche</label>
-          <input className="input" defaultValue={demoWorkspace.niche} />
-        </div>
-        <div className="card glow p-6">
-          <h2 className="text-lg font-semibold text-white">Language + intent model</h2>
-          <label className="mb-2 mt-5 block text-sm text-slate-300">Primary brand color</label>
-          <input className="input" defaultValue={demoWorkspace.primaryColor} />
-          <label className="mb-2 mt-4 block text-sm text-slate-300">Default locale</label>
-          <input className="input" defaultValue={demoWorkspace.defaultLocale} />
-          <label className="mb-2 mt-4 block text-sm text-slate-300">Supported locales</label>
-          <input className="input" defaultValue={demoWorkspace.supportedLocales.join(", ")} />
-          <label className="mb-2 mt-4 block text-sm text-slate-300">Dynamic destination label</label>
-          <input className="input" defaultValue={demoWorkspace.defaultDestinationLabel} />
-          <label className="mb-2 mt-4 block text-sm text-slate-300">Intent labels</label>
-          <input className="input" defaultValue={demoWorkspace.supportedIntentLabels.join(", ")} />
-        </div>
-      </div>
+    <main className="min-h-screen bg-slate-950 p-6 text-white">
+      <div className="mx-auto max-w-3xl">
+        <h1 className="mb-6 text-2xl font-semibold">Configuração do WhatsApp</h1>
 
-      <div className="card glow mt-4 p-6">
-        <h2 className="text-lg font-semibold text-white">What this page now supports</h2>
-        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          {[
-            "Real company config per workspace",
-            "Configurable niche",
-            "Default locale + supported locales",
-            "Dynamic destination / intent fields"
-          ].map((item) => (
-            <div key={item} className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-slate-300">
-              {item}
+        <div className="space-y-6 rounded-xl border border-white/10 bg-white/5 p-6">
+          {params?.success === "connected" && (
+            <div className="rounded-lg border border-green-500/30 bg-green-500/10 p-3 text-sm text-green-300">
+              Integração salva com sucesso.
             </div>
-          ))}
+          )}
+
+          {params?.success === "test-sent" && (
+            <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-3 text-sm text-blue-300">
+              Mensagem de teste enviada com sucesso.
+            </div>
+          )}
+
+          <div>
+            <p className="text-sm text-slate-400">Status</p>
+            <p className="text-lg">
+              {integration?.is_connected ? (
+                <span className="text-green-400">Conectado</span>
+              ) : (
+                <span className="text-red-400">Não conectado</span>
+              )}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-sm text-slate-400">Número conectado</p>
+            <p className="text-lg">{integration?.business_phone || "-"}</p>
+          </div>
+
+          <form
+            action="/api/whatsapp/connect"
+            method="POST"
+            className="space-y-4"
+          >
+            <input type="hidden" name="workspace_id" value={workspace_id} />
+
+            <div>
+              <label className="text-sm text-slate-400">Nome da empresa</label>
+              <input
+                name="company_name"
+                defaultValue={integration?.company_name || ""}
+                className="mt-1 w-full rounded border border-white/10 bg-slate-800 p-2"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="text-sm text-slate-400">
+                Número do WhatsApp (com DDD)
+              </label>
+              <input
+                name="business_phone"
+                defaultValue={integration?.business_phone || ""}
+                placeholder="75992212864"
+                className="mt-1 w-full rounded border border-white/10 bg-slate-800 p-2"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="text-sm text-slate-400">
+                Phone Number ID (Meta)
+              </label>
+              <input
+                name="phone_number_id"
+                defaultValue={integration?.phone_number_id || ""}
+                className="mt-1 w-full rounded border border-white/10 bg-slate-800 p-2"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="text-sm text-slate-400">
+                Access Token (Meta)
+              </label>
+
+              {hasSavedToken ? (
+                <div className="mt-1 flex gap-2">
+                  <input
+                    type="password"
+                    value="••••••••••••••••••••"
+                    disabled
+                    className="w-full rounded border border-white/10 bg-slate-800 p-2 text-slate-400"
+                  />
+                  <button
+                    type="submit"
+                    name="remove_token"
+                    value="true"
+                    className="rounded bg-red-600 px-4 py-2 font-medium text-white"
+                  >
+                    Apagar token
+                  </button>
+                </div>
+              ) : (
+                <input
+                  type="text"
+                  name="access_token"
+                  placeholder="Cole o Access Token da Meta"
+                  className="mt-1 w-full rounded border border-white/10 bg-slate-800 p-2"
+                  required
+                />
+              )}
+
+              <p className="mt-1 text-xs text-slate-500">
+                {hasSavedToken
+                  ? "O token atual está salvo e bloqueado. Para trocar, clique em 'Apagar token' e depois salve um novo."
+                  : "Cole aqui o token da Meta para conectar o número."}
+              </p>
+            </div>
+
+            <button
+              type="submit"
+              className="rounded bg-green-500 px-4 py-2 font-medium text-black"
+            >
+              Salvar / Conectar
+            </button>
+          </form>
+
+          {integration?.is_connected && (
+            <form action="/api/whatsapp/test" method="POST" className="pt-4">
+              <input type="hidden" name="workspace_id" value={workspace_id} />
+              <button type="submit" className="text-blue-400 underline">
+                Enviar mensagem de teste
+              </button>
+            </form>
+          )}
         </div>
       </div>
-    </div>
+    </main>
   );
 }
