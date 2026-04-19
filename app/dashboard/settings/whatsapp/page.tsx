@@ -100,22 +100,35 @@ export default async function WhatsAppSettingsPage({
               <label className="text-sm text-slate-400">
                 Access Token (Meta)
               </label>
-              <input
-                type="password"
-                name="access_token"
-                defaultValue=""
-                placeholder={
-                  hasSavedToken
-                    ? "Token já salvo. Cole outro apenas se quiser substituir."
-                    : "Cole o Access Token da Meta"
-                }
-                className="mt-1 w-full rounded border border-white/10 bg-slate-800 p-2"
-              />
-              <p className="mt-1 text-xs text-slate-500">
-                {hasSavedToken
-                  ? "Já existe um token salvo no banco. Deixe em branco para manter o atual."
-                  : "Cole aqui o token da Meta para conectar o número."}
-              </p>
+
+              {hasSavedToken ? (
+                <div className="mt-1 flex gap-2">
+                  <input
+                    type="text"
+                    name="access_token"
+                    value={integration?.access_token || ""}
+                    readOnly
+                    className="w-full rounded border border-white/10 bg-slate-800 p-2 text-slate-300 outline-none"
+                  />
+                  <button
+                    type="submit"
+                    name="remove_token"
+                    value="true"
+                    className="rounded bg-red-600 px-4 py-2 font-medium text-white"
+                  >
+                    Apagar token
+                  </button>
+                </div>
+              ) : (
+                <input
+                  type="text"
+                  name="access_token"
+                  defaultValue=""
+                  placeholder="Cole o Access Token da Meta"
+                  className="mt-1 w-full rounded border border-white/10 bg-slate-800 p-2"
+                  required
+                />
+              )}
             </div>
 
             <button
